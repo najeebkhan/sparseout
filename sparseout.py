@@ -4,19 +4,22 @@ from torch.autograd import Variable
 r"""Implementation of Sparseout
 
     Examples::
+    >>> import torch
     >>> import torch.nn.functional as F
-    >>> from sparseout import Sparseout
-    >>> input = autograd.Variable(torch.randn(20, 16))
+    >>> from sparseout import sparseout
+    >>> from torch.autograd import Variable
+    
+    >>> input = Variable(torch.randn(5, 5))
     >>> # Dropout
-    >>> output = F.dropout(input, p=0.5)
-    >>> # Sparsout 
-    >>> output = Sparseout(p=0.5, q=2.0)
+    >>> output_dropout = F.dropout(input, p=0.5)
+    >>> # Sparsout
+    >>> output_sparseout = sparseout(input, p=0.5, q=2.0)
     
 .. _Sparseout: Controlling Sparsity in Deep Networks: https://arxiv.org/abs/1904.08050
 """
 
 
-def sparseout(input, p, q, training=False, inplace=False):
+def sparseout(input, p, q, training=True, inplace=False):
     return SparseoutLayer.apply(input, p, q, training, inplace)
 
 

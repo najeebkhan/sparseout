@@ -1,6 +1,24 @@
 from torch.autograd.function import InplaceFunction
 from torch.autograd import Variable
-from torch.nn.modules import Module
+
+r"""Implementation of Sparseout
+
+    Examples::
+    >>> import torch.nn.functional as F
+    >>> from sparseout import Sparseout
+    >>> input = autograd.Variable(torch.randn(20, 16))
+    >>> # Dropout
+    >>> output = F.dropout(input, p=0.5)
+    >>> # Sparsout 
+    >>> output = Sparseout(p=0.5, q=2.0)
+    
+.. _Sparseout: Controlling Sparsity in Deep Networks: https://arxiv.org/abs/1904.08050
+"""
+
+
+def sparseout(input, p, q, training=False, inplace=False):
+    return SparseoutLayer.apply(input, p, q, training, inplace)
+
 
 class SparseoutLayer(InplaceFunction):
 
@@ -47,43 +65,3 @@ class SparseoutLayer(InplaceFunction):
             return grad_output.mul(Variable(ctx.noise)), None, None, None, None
         else:
             return grad_output, None, None, None, None
-
-def sparseout(input, p, q, training=False, inplace=False):
-    return SparseoutLayer.apply(input, p, q, training, inplace)
-
-class Sparseout(Module):
-    r"""Implementation of Sparseout based on
-
-
-    Examples::
-
-        >>> from sparseout import Sparseout
-        >>> m = Sparseout(p=0.2, q=1.8) # same as nn.Dropout
-        >>> input = autograd.Variable(torch.randn(20, 16))
-        >>> output = m(input)
-
-    .. _Sparseout: Controlling Sparsity in Deep Networks: https://arxiv.org/abs/TBD
-    """
-
-    def __init__(self, p=0.5, q=2.0, inplace=False):
-        super(SO, self).__init__()
-        if p < 0 or p > 1:
-            raise ValueError("dropout probability has to be between 0 and 1, "
-                             "but got {}".format(p))
-        self.p = p
-        self.q = q
-        self.inplace = inplace
-
-    def forward(self, input):
-        return SparseoutLayer(input, self.p, self.q, self.training, self.inplace)
-
-    def __repr__(self):
-        inplace_str = ', inplace' if self.inplace else ''
-        return self.__class__.__name__ + ' (' \
-            + 'p = ' + str(self.p) \
-            + ' q = ' + str(self.q) \
-            + inplace_str + ')'
-
-
-
-
